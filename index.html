@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Cartigraph Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha512-6MXa8B6uaO18Hid6blRMetEIoPqHf7Ux1tnyIQdpt9qI5OACx7C+O3IVTr98vwGnlcg0LOLa02i9Y1HpVhlfiw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style type="text/css">
+        #map {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+        }
+
+        .control-overlay {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            margin-left: 20px;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 3px;
+            min-height: 200px;
+            width: 300px;
+        }
+
+        #tab-selector {
+            padding: 0px;
+        }
+
+        .tab-pane {
+            padding: 5px;
+        }
+
+        .tab-selector-list li a {
+            border: none !important;
+            border-radius: 0 !important;
+        }
+
+        .tab-selector-list li:not(.active) a {
+            background: #cce7ed;
+        }
+
+        .tab-selector-list li.active a {
+            background: #FFF;
+        }
+
+        .tab-content {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .tab-content .list-item {
+            padding: 0px;
+        }
+
+        .tab-content .list-item h3 {
+            font-size: 18px;
+            margin-top: 10px;
+            margin-bottom: 0px;
+        }
+
+        .tab-content .list-item .row {
+            margin: 0px;
+        }
+
+        .tab-content .list-item p {
+            font-size: 12px;
+        }
+
+        .tab-content .list-item .id {
+            height: 25px;
+            width: 25px;
+            background: #cce7ed;
+            font-size: 13px;
+            color: #333;
+            padding: 5px;
+            margin: 17px auto;
+            text-align: center;
+            display: block;
+        }
+
+        .tab-content .list-item .mi {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            padding: 5px;
+            margin-top: 17px;
+            display: block;
+        }
+
+        .tab-content .list-item .list-item-cb-container {
+            padding: 0px;
+            height: 59.15px;
+            text-align: center;
+        }
+
+        .tab-content .list-item .list-item-cb-container input[type="checkbox"] {
+            margin-top: 23px;
+        }
+
+        .tab-content .list-item .list-item-route-num {
+            padding: 0px;
+            height: 59.15px;
+        }
+
+        .tab-content .list-item .list-item-route-desc {
+            padding: 0px;
+        }
+
+        .tab-content .list-item .list-item-mileage {
+            padding: 0px;
+        }
+
+        .hazard-legend-overlay {
+            position: absolute;
+            top: 20px;
+            right: 0;
+            background: rgba(255, 255, 255, 1);
+            margin-right: 20px;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 3px;
+            height: 50px;
+            width: 500px;
+            padding: 5px;
+        }
+
+        .hazard-legend-overlay .legend-col {
+            padding: 0px;
+        }
+
+        .hazard-legend-overlay span {
+            font-size: 11px;
+            font-weight: bold;
+        }
+    </style>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid" id="map"></div>
+    <div class="control-overlay">
+        <div class="container-fluid">
+            <div class="row" id="selector-control">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="tab-selector">
+                    <ul class="nav nav-tabs nav-justified tab-selector-list">
+                        <!--<li role="presentation" class="disabled"><a href="#surveyors-tab" data-toggle="tab">Surveyors</a></li>-->
+                        <li role="presentation" class="active"><a href="#routes-tab" data-toggle="tab">Routes</a></li>
+                        <!--<li role="presentation" class="disabled"><a href="#hazards-tab" data-toggle="tab">Hazards</a></li>-->
+                    </ul>
+                    <div class="tab-content">
+                        <div id="surveyors-tab" class="tab-pane fade">
+                            <div class="col-xs-12 col-sm12 col-md-12 col-lg-12 list-item">
+                                <h3>Surveyor 1</h3>
+                                <p>Some content.</p>
+                            </div>
+
+                            <div class="col-xs-12 col-sm12 col-md-12 col-lg-12 list-item">
+                                <h3>Surveyor 2</h3>
+                                <p>Some content.</p>
+                            </div>
+
+                            <div class="col-xs-12 col-sm12 col-md-12 col-lg-12 list-item">
+                                <h3>Surveyor 3</h3>
+                                <p>Some content.</p>
+                            </div>
+                        </div>
+                        <div id="routes-tab" class="tab-pane fade in active"></div>
+                        <div id="hazards-tab" class="tab-pane fade">
+                            <h3>Hazards</h3>
+                            <p>Some content in menu 2.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hazard-legend-overlay">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 legend-col text-center">
+                    <img src="icons/hazard_green.svg" />
+                    <span> = Level Change</span>
+                </div>
+                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 legend-col text-center">
+                    <img src="icons/hazard_yellow.svg" />
+                    <span> = Obstruction</span>
+                </div>
+                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 legend-col text-center">
+                    <img src="icons/hazard_orange.svg" />
+                    <span> = Surface</span>
+                </div>
+                <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 legend-col text-center">
+                    <img src="icons/hazard_grey.svg" />
+                    <span> = Distress</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mustache.JS Templates -->
+    <script type="text/template" id="tab-route-item">
+		{{#routes}}
+			<div class="col-xs-12 col-sm12 col-md-12 col-lg-12 list-item">
+				<div class="row">
+					<div class="col-xs-1 col-sm-1 col-md-1 col-lg-1 list-item-cb-container">
+						<input type="checkbox" class="route-checkbox" value="{{route}}" checked>				    					
+					</div>
+					<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 list-item-route-num">
+						<span class="id">{{idx}}</span>
+					</div>
+					<div class="col-xs-5 col-sm-5 col-md-5 col-lg-5 list-item-route-desc">
+						<h3>{{route}}</h3>
+						<p>{{surveyor_cnt}} surveyor(s)</p>
+					</div>
+					<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-right list-item-mileage">
+						<span class="mi">{{route_length_in_miles}}mi</span>
+					</div>
+				</div>
+			</div>
+		{{/routes}}		
+	</script>
+
+    <script type="text/template">
+
+	</script>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha512-iztkobsvnjKfAtTNdHkGVjAYTrrtlC7mGp/54c40wowO7LhURYl3gVzzcEqGl/qKXQltJ2HwMrdLcNUdo+N/RQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.2.1/mustache.min.js"
+        integrity="sha512-Qjrukx28QnvFWISw9y4wCB0kTB/ISnWXPz5/RME5o8OlZqllWygc1AB64dOBlngeTeStmYmNTNcM6kfEjUdnnQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js"></script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            mapboxgl.accessToken = 'pk.eyJ1IjoiY2FydGlncmFwaDIxIiwiYSI6ImNrb3hqb3A4dTBlN2wybnF3bHpucnJoaWkifQ.td0tqyZD0Tb5wwAf49LWtA';
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/cartigraph21/ckqaruymc1x3c18nuaugouds5',
+                center: [-118.0585340262865, 33.85086346913727],
+                zoom: 16,
+            });
+            map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+            map.on("load", function () {
+
+                let urlParams = new URLSearchParams(window.location.search);
+                let selectedProject = (urlParams.get("project") !== null) ? urlParams.get("project") : "all";
+
+                console.log(selectedProject);
+
+                function getLocationSrc(project) {
+                    return {
+                        'type': 'vector',
+                        'tiles': [
+                            `https://mapapi.cartigraph.com:4500/api/mvt/locations?z={z}&x={x}&y={y}&p=${project}`
+                        ]
+                    }
+                }
+
+                function getHazardSrc(project) {
+                    return {
+                        'type': 'vector',
+                        'tiles': [
+                            `https://mapapi.cartigraph.com:4500/api/mvt/hazards?z={z}&x={x}&y={y}&p=${project}`
+                        ]
+                    }
+                }
+
+                fetch(`https://mapapi.cartigraph.com:4500/api/extent/projects/${selectedProject}`)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (result) {
+                        console.log(result);
+                        if (result.data.lat === null) {
+                            return;
+                        }
+                        map.setCenter([result.data.lng, result.data.lat]);
+                        map.setZoom(13);
+                    })
+
+                fetch(`data.json`)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (result) {
+                        if (!result || !result.data || result.data.length === 0) return;
+                        //mapbox GL js add circle layer full code example 
+
+                        // Add a GeoJSON source with 3 points.
+                        map.addSource('points', {
+                            'type': 'geojson',
+                            'data': {
+                                'type': 'FeatureCollection',
+                                'features': []
+                            }
+                        });
+                        // Add a circle layer
+                        map.addLayer({
+                            'id': 'circle',
+                            'type': 'circle',
+                            'source': 'points',
+                            'paint': {
+                                'circle-color': '#4264fb',
+                                'circle-radius': 8,
+                                'circle-stroke-width': 2,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
+                        const data = result.data.map(d => {
+                            console.log('d', d);
+                            const { Lat: lat, Lon: lng } = d
+                            return {
+                                'type': 'Feature',
+                                'properties': {},
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': [+lng, +lat]
+                                }
+                            }
+                        })
+                        const collection = {
+                            'type': 'FeatureCollection',
+                            'features': data
+                        }
+                        map.getSource("points").setData(collection)
+                    })
+
+                fetch(`https://mapapi.cartigraph.com:4500/api/data/projects/${selectedProject}`)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (result) {
+                        console.log(result);
+                        let routes = [];
+                        for (var i = 0; i < result.data.length; i++) {
+                            let item = { ...result.data[i] };
+                            item.idx = i + 1;
+                            routes.push(item);
+                        }
+
+                        $("#routes-tab")
+                            .html(Mustache.render($("#tab-route-item").html(), { "routes": routes }));
+
+                        $(".route-checkbox")
+                            .on("change", function (e) {
+                                let routeName = e.target.value;
+                                let routeVisibility = $(this).is(":checked");
+
+                                //Get routes that are still visible
+                                let visibleRoutes = [];
+                                $(".route-checkbox").each(function (idx, elem) {
+                                    if ($(elem).is(":checked")) {
+                                        visibleRoutes.push($(elem).val());
+                                    }
+                                });
+
+                                //Filter the routes on the map based on the checkbox visibility status
+                                map.setFilter("locations-lyr", ["in", ["get", "route"], ["literal", visibleRoutes]],);
+                            });
+                    });
+
+
+                map.addSource("locations-src", getLocationSrc(selectedProject));
+                map.addSource("hazards-src", getHazardSrc(selectedProject));
+                map.addLayer({
+                    'id': 'locations-lyr',
+                    'type': 'circle',
+                    'source': 'locations-src',
+                    'source-layer': 'locations',
+                    'paint': {
+                        'circle-radius': 5,
+                        'circle-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', '_cross'],
+                            0, 'hsl(120,100%,50%)',
+                            2.5, 'hsl(35,100%,50%)',
+                            4, 'hsl(0,100%,50%)'
+                        ],
+                    }
+                });
+
+                map.addLayer({
+                    'id': 'hazards-lyr',
+                    'type': 'symbol',
+                    'source': 'hazards-src',
+                    'source-layer': 'hazards',
+                    'paint': {
+                        'icon-halo-blur': 1,
+                        'icon-halo-color': "#FFF"
+                    },
+                    'layout': {
+                        'icon-image': ["case",
+                            ["==", ["get", "category"], "Level Changes"], "hazard_green",
+                            ["==", ["get", "category"], "Obstruction"], "hazard_yellow",
+                            ["==", ["get", "category"], "Surface"], "hazard_orange",
+                            ["==", ["get", "category"], "Distress"], "hazard_grey",
+                            ""
+                        ]
+                    }
+                });
+
+            });
+
+            map.on("click", "locations-lyr", function (e) {
+                console.log(e);
+                console.log(e.features[0].properties);
+            })
+
+        });
+    </script>
+</body>
+
+</html>
