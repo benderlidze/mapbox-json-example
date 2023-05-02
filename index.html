@@ -295,6 +295,61 @@
                         map.setZoom(13);
                     })
 
+
+                fetch("https://cartigraphs.cartigraph.com/Home/FetchRawData", {
+                    "headers": {
+                        "accept": "application/json, text/javascript, */*; q=0.01",
+                        "accept-language": "en,ru;q=0.9,uk;q=0.8",
+                        "cache-control": "no-cache",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        "pragma": "no-cache",
+                        "sec-ch-ua": "\"Chromium\";v=\"112\", \"Google Chrome\";v=\"112\", \"Not:A-Brand\";v=\"99\"",
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-ch-ua-platform": "\"Windows\"",
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin",
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    "referrer": "https://cartigraphs.cartigraph.com/Home/RawData",
+                    "referrerPolicy": "strict-origin-when-cross-origin",
+                    "body": "draw=1&start=0&length=-1&",
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                }).then(d => d.json()).then(d => {
+                })
+
+                d = { "recordsTotal": 3, "recordsFiltered": 3, "draw": 1, "data": [{ "TimeId": 1682535481494, "UserName": "joey", "Project": "TEST 04.26.23", "Route": "2", "Category": "Level Changes", "CategoryType": "Type 1", "Cross": 2.2, "Running": 23.3, "Accuracy": 64, "Lat": "33.85352375471842", "Lon": "-118.059392729322", "GpsTime": 1682535477296, "SyncId": 40, "SyncTime": 1682535489892, "Comment": "Gap,crack", "PhotoName": "joeyTEST_04.26.2321682535481310R", "SurveyorId": 28, "TimeStamp": "04/26/2023 11:58:01:AM", "GPSTimeStamp": "04/26/2023 11:57:57:AM" }, { "TimeId": 1682535074601, "UserName": "joey", "Project": "TEST 04.26.23", "Route": "2", "Category": "Level Changes", "CategoryType": "Type 1", "Cross": 17.1, "Running": 26.4, "Accuracy": 66, "Lat": "33.85131131893123", "Lon": "-118.0581267160854", "GpsTime": 1682535072127, "SyncId": 39, "SyncTime": 1682535079481, "Comment": "2 inch gap", "PhotoName": "joeyTEST_04.26.2321682535074416R", "SurveyorId": 28, "TimeStamp": "04/26/2023 11:51:14:AM", "GPSTimeStamp": "04/26/2023 11:51:12:AM" }, { "TimeId": 1682515504887, "UserName": "jason", "Project": "TEST 04.26.23", "Route": "1", "Category": "Level Changes", "CategoryType": "Type 2", "Cross": -2.6, "Running": 33.2, "Accuracy": 4.855165973560124, "Lat": "33.88599897777139", "Lon": "-118.0673294515197", "GpsTime": 1682515503999, "SyncId": 14, "SyncTime": 1682515503984, "Comment": "", "PhotoName": "", "SurveyorId": 27, "TimeStamp": "04/26/2023 06:25:04:AM", "GPSTimeStamp": "04/26/2023 06:25:03:AM" }], "isAdmin": true, "isPMM": false, "isClient": false, "isPMMCounter": false }
+                console.log('d', d);
+
+                d.data.forEach(element => {
+                    const { Lat, Lon, Category } = element
+                    let color = "blue"
+                    switch (Category) {
+                        case "Obstruction ":
+                            color = "purple"
+                            break;
+                        case "Distress":
+                            color = "yellow"
+                            break;
+                        case "Surface":
+                            color = "brown"
+                            break;
+                    }
+
+                    const marker = new mapboxgl.Marker({
+                        draggable: true,
+                        color
+                    })
+                        .setLngLat([+Lon, +Lat])
+                        .addTo(map);
+                    marker.on('dragend', () => {
+                        const lngLat = marker.getLngLat();
+                    });
+                });
+
+
                 fetch(`data.json`)
                     .then(function (response) {
                         return response.json();
@@ -317,24 +372,41 @@
                             'type': 'circle',
                             'source': 'points',
                             'paint': {
-                                'circle-color': '#4264fb',
-                                'circle-radius': 8,
-                                'circle-stroke-width': 2,
+                                'circle-color': ['get', 'color'],
+                                'circle-radius': 3,
+                                'circle-stroke-width': 1,
                                 'circle-stroke-color': '#ffffff'
                             }
                         });
-                        const data = result.data.map(d => {
-                            console.log('d', d);
-                            const { Lat: lat, Lon: lng } = d
-                            return {
-                                'type': 'Feature',
-                                'properties': {},
-                                'geometry': {
-                                    'type': 'Point',
-                                    'coordinates': [+lng, +lat]
+                        const data = result.data
+                            //remove every 3rd point
+                            .filter((d, i) => i % 3 === 0)
+                            .map(d => {
+                                const { Lat: lat, Lon: lng, Cross } = d
+
+                                let color = 'red';
+                                const cross = Math.round(Math.abs(d['Cross']))
+                                if (cross >= 0 && cross <= 5) {
+                                    color = 'green';
                                 }
-                            }
-                        })
+                                if (cross >= 6 && cross <= 10) {
+                                    color = 'orange';
+                                }
+                                if (cross >= 11) {
+                                    color = 'red';
+                                }
+
+                                return {
+                                    'type': 'Feature',
+                                    'properties': {
+                                        color,
+                                    },
+                                    'geometry': {
+                                        'type': 'Point',
+                                        'coordinates': [+lng, +lat]
+                                    }
+                                }
+                            })
                         const collection = {
                             'type': 'FeatureCollection',
                             'features': data
