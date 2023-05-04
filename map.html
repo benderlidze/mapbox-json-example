@@ -322,14 +322,17 @@
                         const { Lat, Lon, Category } = element
                         let color = "blue"
                         switch (Category) {
-                            case "Obstruction ":
-                                color = "purple"
+                            case "Obstructions":
+                                color = "#d3dd00"
                                 break;
                             case "Distress":
                                 color = "yellow"
                                 break;
                             case "Surface":
-                                color = "brown"
+                                color = "#d39300"
+                                break;
+                            case "Level Changes":
+                                color = "#00b400"
                                 break;
                         }
 
