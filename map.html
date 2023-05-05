@@ -318,6 +318,15 @@
                     "mode": "cors",
                     "credentials": "include"
                 }).then(d => d.json()).then(d => {
+
+                    const latest = d.data.sort((a, b) => b.TimeId - a.TimeId)
+                    if (latest && latest[0]) {
+                        map.flyTo({
+                            center: [latest[0].Lon, latest[0].Lat],
+                            zoom: 18,
+                        })
+                    }
+
                     d.data.forEach(element => {
                         const { Lat, Lon, Category } = element
                         let color = "blue"
@@ -326,7 +335,7 @@
                                 color = "#d3dd00"
                                 break;
                             case "Distress":
-                                color = "yellow"
+                                color = "#65655a"
                                 break;
                             case "Surface":
                                 color = "#d39300"
