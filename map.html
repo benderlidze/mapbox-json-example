@@ -412,15 +412,18 @@
 
                                 let color = 'red';
                                 const cross = Math.round(Math.abs(d['Cross']))
-                                if (cross >= 0 && cross <= 5) {
+                                if (cross >= 0 && cross <= 2.25) {
                                     color = 'green';
                                 }
-                                if (cross >= 6 && cross <= 10) {
+                                if (cross > 2.25) {
                                     color = 'orange';
                                 }
-                                if (cross >= 11) {
-                                    color = 'red';
-                                }
+                                // if (cross >= 6 && cross <= 10) {
+                                //     color = 'orange';
+                                // }
+                                // if (cross >= 11) {
+                                //     color = 'red';
+                                // }
 
                                 return {
                                     'type': 'Feature',
